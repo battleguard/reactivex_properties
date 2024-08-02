@@ -1,72 +1,31 @@
-"""
-https://rxpy.readthedocs.io/en/latest/operators.html
-"""
+class MyClass:
+    def __init__(self, value):
+        self._value = value
 
-import sys
-import os
-from pathlib import Path
+    def get_value(self):
+        """The 'value' property."""
+        return self._value
 
-import reactivex as rx
-from reactivex import operators as ops
+    def set_value(self, new_value):
+        print(f'property set {new_value=}')
+        self._value = new_value
 
-def test_rx_on_path():
-    sys_paths: rx.Observable[list[str]] = rx.from_iterable(os.environ['PATH'].split(os.pathsep))
-    HOME_PATH: Path = Path.home()
-    # user_paths = sys_paths.pipe(
-    #     ops.map(lambda p: Path(p)),
-    #     ops.filter(lambda p: p.is_relative_to(HOME_PATH)),
-    #     ops.map(lambda p: p.relative_to(HOME_PATH))
-    # )
+    value = property(get_value, set_value, None, "foo")
+    value2_hello_world = property()
 
-    def path_query(p: str):
-        if (path := Path(p)) and path.is_relative_to(HOME_PATH):
-            yield path
+# Create an instance of MyClass
+obj = MyClass(42)
 
-    def filter(p: str):
-        if (path := Path(p)) and path.is_relative_to(HOME_PATH):
-            return rx.of(path.relative_to(HOME_PATH))
-        return rx.empty()
+# Access the property object from the class
+property_obj: property = MyClass.value
 
-    user_paths = sys_paths.pipe(
-        ops.map(Path),
-        ops.map(Path.as_uri),
-        ops.map(len),
-        ops.sum(),
-        # ops.flat_map(filter),
-        # ops.flat_map(lambda p: rx.of(p.relative_to(HOME_PATH)) \
-        #              if (p := Path(p)) and p.is_relative_to(HOME_PATH) \
-        #                 else rx.empty()),
-        # ops.map(lambda p: Path(p).relative_to(HOME_PATH)),
-        ops.distinct()
-    )
-
-    # sys_paths: rx.Observable[list[str]] = rx.from_iterable([1,2,3])
-    user_paths.subscribe(lambda value: print(f"Received {value} {value.__class__}"),
-                         on_error=lambda e: print(f'{e=}'),
-                         on_completed=lambda: print(f'on_complete'))
-
-
-def default_test():
-    source = rx.of("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
-    composed = source.pipe(
-        ops.map(lambda s: len(s)),
-        ops.filter(lambda i: i >= 5)
-    )
-    composed.subscribe(lambda value: print("Received {0}".format(value)))
-
-def test_lambda():
-    (lambda x: (a:=x*2) + a)(3)
-    func = lambda x: (x + 1) + 1
-    print(func(5))
-    
-
-if __name__ == '__main__':
-    test_lambda()
-    # test_rx_on_path()
-
-
-
-# how to open multiple windows?
-
-# how to install package?
-# pip installing required restart of idle
+# Print information about the property
+print("Property name:", property_obj.fget.__name__)
+print("Docstring:", property_obj.fget.__doc__)
+print("Getter function:", property_obj.fget)
+print("Setter function:", property_obj.fset)
+print("Deleter function:", property_obj.fdel)
+print("doc function:", property_obj.__doc__)
+print(dir(property_obj))
+print(MyClass.value2_hello_world.__doc__)
+property_obj.fset(obj, 10)
